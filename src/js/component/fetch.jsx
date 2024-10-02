@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 
-/// pendientes: arreglar que se vean las viñetas quitando el flex pero acomodando que queden los iconos del lado derecho sin moverse...
-/// preguntas a irio y gaston: como uso position relative y absolute para los iconos
-
 const ToDoList = () => {
   const [tasks, setTasks] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState(false);
   const [error2, setError2] = useState(false);
   const [allUsers, setAllUsers] = useState([]); // aqui almacenaramos los datos de los usuarios en base de datos para crear usuarios y no puedas meter uno que ya existe y no de error el post
-  const [user, setUser] = ([])
+  const [user, setUser] = [];
   let maxLength = 70;
 
   const user1 = "AleRugg";
@@ -39,7 +36,6 @@ const ToDoList = () => {
   };
 
   const getUsers = () => {
-
     const requestOptions = {
       method: "GET", // este GET nos trae todos los usuarios existentes en la base de datos
     };
@@ -51,12 +47,14 @@ const ToDoList = () => {
       .then((result) => {
         if (result.users) {
           const userNames = result.users.map((user) => user.name); // con esto obtenemos los nombres para poder hacer comparaciones de si existen o no
-          setAllUsers(userNames, result)
-          console.log(allUsers);   
+          const userExists = userNames.includes(user1);
+          console.log(userExists)      
+          if(userExists === true) {console.log("Ya existe este usuario") }
+          else {createUser()}
         }
       })
       .catch((error) => console.error(error));
-  } 
+  };
 
   // DELETES
 
@@ -89,82 +87,6 @@ const ToDoList = () => {
       .then((result) => console.log(result))
       .catch((error) => console.error(error));
   };
-
-  const createUser = () => {
-    fetch("https://playground.4geeks.com/todo/users/AleRugg", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(),
-    })
-      .then((response) => response.json())
-      .then((data) => console.log(data))
-      .catch((error) => console.error(error));
-  };
-
- useEffect(()=>{
-
-  const userExists = allUsers.includes(user1)
-
-  
-
-  userExists === true ?  console.log("Ya existe este usuario") : createUser()
-
- },[allUsers,tasks])
-
-  //comparativa para que cree el usuario al iniciar la app // crea el usuario pero no esta ejecutando la condicion por el momento 
-
-  const findAName = () => {
-    const existingUser = allUsers.find((user) => user === user1); // Accedes al estado allUsers directamente
-console.log(allUsers)
-    if (allUsers && existingUser) {
-      console.log("Ya Creado");
-    } else {
-      createUser();
-      console.log(allUsers);
-      console.log(user);
-    }
-  };
-
-
-
-useEffect(() => {
-  if (tasks.length == 10) {
-    setError(true);
-    // alerta de maximas tareas diarias (10)
-  } else setError(false);
-},[])
-
-
-
-useEffect(() => {
-  if (inputValue.length == maxLength) {
-    // alerta de maximos caracateres
-    setError2(true);
-  } else {
-    setError2(false);
-  }
-},[])
-
-
-  useEffect(() => {
-    getUserTasks();
-  }, []);
-
-  useEffect(() => {
-getUsers()
-  }, []);
-
-
-  useEffect(()=>{
-    findAName()
-  },[])
-
-  useEffect(() => {
-    console.log(allUsers);
-    console.log(tasks);
-  }, [allUsers, tasks]);
 
   const createToDo = () => {
     const myHeaders = new Headers();
@@ -213,6 +135,73 @@ getUsers()
       .catch((error) => console.error(error));
   };
 
+  const createUser = () => {
+    fetch("https://playground.4geeks.com/todo/users/AleRugg", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(),
+    })
+      .then((response) => response.json())
+      .then((data) => console.log(data))
+      .catch((error) => console.error(error));
+  };
+
+  //comparativa para que cree el usuario al iniciar la app // crea el usuario pero no esta ejecutando la condicion por el momento
+
+  const findAName = () => {
+    const existingUser = allUsers.find((user) => user === user1); // Accedes al estado allUsers directamente
+    console.log(allUsers);
+    if (allUsers && existingUser) {
+      console.log("Ya Creado");
+    } else {
+      createUser();
+      console.log(allUsers);
+      console.log(user);
+    }
+  };
+
+  // useEffect(() => {
+  //   const userExists = allUsers.includes(user1);
+  //   console.log(userExists)
+
+  //   userExists === true ? console.log("Ya existe este usuario") : createUser();
+  // }, []);
+
+  useEffect(() => {
+    if (tasks.length === 10) {
+      setError(true);
+      // alerta de maximas tareas diarias (10)
+    } else setError(false);
+  }, [tasks]);
+
+  useEffect(() => {
+    if (inputValue.length === maxLength) {
+      // alerta de maximos caracateres
+      setError2(true);
+    } else {
+      setError2(false);
+    }
+  }, [tasks, inputValue]);
+
+  useEffect(() => {
+    getUserTasks();
+  }, []);
+
+  useEffect(() => {
+    getUsers();
+  }, []);
+
+  useEffect(() => {
+    findAName();
+  }, []);
+
+  useEffect(() => {
+    console.log(allUsers);
+    console.log(tasks);
+  }, [allUsers, tasks]);
+
   return (
     <div className="container toDoWrapper">
       <div className="card bg-dark cont">
@@ -226,10 +215,10 @@ getUsers()
               onChange={inputHandler}
               onKeyDown={handlerKeyDown}
               disabled={tasks.length >= 10}
-              maxLength={100}
+              maxLength={70}
             />
             {error && (
-              <span className=" mxLength">
+              <span className="mxLength">
                 Solo puedes añadir 10 tareas a tu lista!
               </span>
             )}
@@ -304,7 +293,7 @@ export { ToDoList };
 //   const [inputValue, setInputValue] = useState("");
 //   const [error, setError] = useState(false);
 //   const [error2, setError2] = useState(false);
-//   const [allUsers, setAllUsers] = useState([]); 
+//   const [allUsers, setAllUsers] = useState([]);
 //   // Nuevo estado para controlar la carga
 //   const [isLoading, setIsLoading] = useState(true);
 //   let maxLength = 70;
@@ -318,7 +307,7 @@ export { ToDoList };
 //   const handlerKeyDown = (e) => {
 //     if (e.key === "Enter" && inputValue !== "") {
 //       createToDo();
-//       setInputValue(""); 
+//       setInputValue("");
 //     }
 //   };
 
